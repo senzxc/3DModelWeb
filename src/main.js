@@ -19,10 +19,11 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 
 // cincin
-const cincinGeometry = new THREE.TorusGeometry(10, 3, 16, 100);
+const cincinGeometry = new THREE.TorusGeometry(5, 1.5, 16, 100);
 const cincinMaterial = new THREE.MeshStandardMaterial({ color: 0xff6347 });
 const cincin = new THREE.Mesh(cincinGeometry, cincinMaterial);
 cincin.castShadow = true;
+cincin.position.set(0, 0, 25)
 scene.add(cincin);
 
 // lighting
@@ -66,24 +67,23 @@ window.addEventListener("scroll", cameraMovement);
 
 // Ikon
 const hutaoGeometry = new THREE.BoxGeometry(5, 5, 5);
-const hutaoTexture = new THREE.TextureLoader().load("p5.jpeg");
+const hutaoTexture = new THREE.TextureLoader().load("hutao.jpeg");
 const hutaoMaterial = new THREE.MeshStandardMaterial({ map: hutaoTexture });
 const hutao = new THREE.Mesh(hutaoGeometry, hutaoMaterial);
-hutao.position.set(8, 0, 35);
+hutao.position.set(5, 0, 5);
 hutao.castShadow = true;
 scene.add(hutao);
 
 // Mars
-const marsMap = new THREE.TextureLoader().load("ppfb.jpg");
+const marsMap = new THREE.TextureLoader().load("serizawa.jpg");
 
-const marsGeometry = new THREE.SphereGeometry(10, 32, 32);
+const marsGeometry = new THREE.SphereGeometry(3, 32, 32);
 const marsMaterial = new THREE.MeshStandardMaterial({
   map: marsMap,
 });
 
 const mars = new THREE.Mesh(marsGeometry, marsMaterial);
-mars.position.z = -10;
-mars.position.x = -30;
+mars.position.set(-5, 0, 5)
 scene.add(mars);
 
 // Animasi
