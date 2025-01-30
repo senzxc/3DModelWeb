@@ -1,103 +1,122 @@
-import * as THREE from "three";
+import * as THREE from 'three';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
+import './style.css';
+import * as dat from 'dat.gui';
 
-// Setup
+const renderer = new THREE.WebGLRenderer();
+
+renderer.shadowMap.enabled = true;
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+document.body.appendChild(renderer.domElement);
+
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
-  75,
+  45,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
-camera.position.z = 50;
 
-const renderer = new THREE.WebGLRenderer({
-  canvas: document.querySelector("#bg"),
+const orbit = new OrbitControls(camera, renderer.domElement);
+
+const axesHelper = new THREE.AxesHelper(5);
+scene.add(axesHelper);
+
+camera.position.set(-10, 30, 30);
+orbit.update();
+
+const boxGeometry = new THREE.BoxGeometry();
+const boxMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
+const box = new THREE.Mesh(boxGeometry, boxMaterial);
+scene.add(box);
+
+const planeGeometry = new THREE.PlaneGeometry(30, 30);
+const planeMaterial = new THREE.MeshStandardMaterial({
+  color: 0xffffff,
+  side: THREE.DoubleSide
 });
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+scene.add(plane);
+plane.rotation.x = -0.5 * Math.PI;
+plane.receiveShadow = true;
 
-// cincin
-const cincinGeometry = new THREE.TorusGeometry(5, 1.5, 16, 100);
-const cincinMaterial = new THREE.MeshStandardMaterial({ color: 0xff6347 });
-const cincin = new THREE.Mesh(cincinGeometry, cincinMaterial);
-cincin.castShadow = true;
-cincin.position.set(0, 0, 25)
-scene.add(cincin);
+const gridHelper = new THREE.GridHelper(30);
+scene.add(gridHelper);
 
-// lighting
-const pointLight = new THREE.PointLight(0xffffff);
-pointLight.position.set(50, 50, 50);
-pointLight.castShadow = true;
-scene.add(pointLight);
+const sphereGeomery = new THREE.SphereGeometry(4);
+const sphereMaterial = new THREE.MeshStandardMaterial({color: 0x00000ff});
+const sphere = new THREE.Mesh(sphereGeomery, sphereMaterial);
+scene.add(sphere);
+sphere.position.set(-10, 10, 0);
+sphere.castShadow = true;
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-scene.add(ambientLight);
+const ambient = new THREE.AmbientLight(0x333333);
+scene.add(ambient);
 
-// Bintang
-function addStar() {
-  const starGeometry = new THREE.SphereGeometry(0.2, 24, 24);
-  const starMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-  const star = new THREE.Mesh(starGeometry, starMaterial);
+// const directional = new THREE.DirectionalLight(0xffffff, 2);
+// scene.add(directional);
+// directional.position.set(-30, 50, 0);
+// directional.castShadow = true;
+// directional.shadow.camera.bottom = -12;
 
-  const [x, y, z] = Array(3)
-    .fill()
-    .map(() => THREE.MathUtils.randFloatSpread(400));
+// const dLightHelper = new THREE.DirectionalLightHelper(directional, 5);
+// scene.add(dLightHelper);
 
-  star.position.set(x, y, z);
+// const dLightShadowHelper = new THREE.CameraHelper(directional.shadow.camera);
+// scene.add(dLightShadowHelper);
 
-  scene.add(star);
-}
-Array(200).fill().forEach(addStar);
+const spotLight = new THREE.SpotLight(0xffffff, 50000);
+scene.add(spotLight);
+spotLight.position.set(-100, 100, 0);
+spotLight.castShadow = true;
+spotLight.angle = 0.2;
 
-//camera
-let scrollOffset = 0;
-function cameraMovement() {
-  const t = document.body.getBoundingClientRect().top;
+const sLightHelper = new THREE.SpotLightHelper(spotLight);
+scene.add(sLightHelper);  
 
-  scrollOffset = THREE.MathUtils.lerp(scrollOffset, t * 0.01, 0.1);
+const gui = new dat.GUI();
 
-  camera.position.z = Math.max(10, 50 + scrollOffset);
+const options = {
+  sphereColor: '#ffea00',
+  wireframe: false,
+  speed: 0.01,
+  angle: 0.2,
+  penumbra: 0,
+  intensity: 1
+};
 
-  hutao.rotation.y = t * 0.01;
-  cincin.rotation.y = t * 0.01;
-}
-window.addEventListener("scroll", cameraMovement);
-
-// Ikon
-const hutaoGeometry = new THREE.BoxGeometry(5, 5, 5);
-const hutaoTexture = new THREE.TextureLoader().load("hutao.jpeg");
-const hutaoMaterial = new THREE.MeshStandardMaterial({ map: hutaoTexture });
-const hutao = new THREE.Mesh(hutaoGeometry, hutaoMaterial);
-hutao.position.set(5, 0, 5);
-hutao.castShadow = true;
-scene.add(hutao);
-
-// Mars
-const marsMap = new THREE.TextureLoader().load("serizawa.jpg");
-
-const marsGeometry = new THREE.SphereGeometry(3, 32, 32);
-const marsMaterial = new THREE.MeshStandardMaterial({
-  map: marsMap,
+gui.addColor(options, 'sphereColor').onChange(function(e){
+  sphere.material.color.set(e);
 });
 
-const mars = new THREE.Mesh(marsGeometry, marsMaterial);
-mars.position.set(-5, 0, 5)
-scene.add(mars);
+gui.add(options, 'wireframe').onChange(function(e){
+  sphere.material.wireframe = e;
+});
 
-// Animasi
+gui.add(options, 'speed', 0, 0.1);
+
+gui.add(options, 'angle', 0, 1);
+gui.add(options, 'penumbra', 0, 1);
+gui.add(options, 'intensity', 0, 50000);
+
+let step = 0;
+
 function animate() {
-  requestAnimationFrame(animate);
+  box.rotation.x += 0.01;
+  box.rotation.y += 0.01;
 
-  mars.rotation.y += 0.01;
+  step += options.speed;
+  sphere.position.y = 10 * Math.abs(Math.sin(step))
 
-  hutao.rotation.x += 0.01;
-
-  cincin.rotation.x += 0.01;
-  cincin.rotation.y += 0.02;
+  spotLight.angle = options.angle;
+  spotLight.penumbra = options.penumbra;
+  spotLight.intensity = options.intensity;
+  sLightHelper.update();
 
   renderer.render(scene, camera);
 }
 
-animate();
+renderer.setAnimationLoop(animate);
