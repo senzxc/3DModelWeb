@@ -3,6 +3,15 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import './style.css';
 import * as dat from 'dat.gui';
 
+import hutao from './img/hutao.jpeg';
+import serizawa from './img/serizawa.jpg';
+import miku1 from './img/haha.jpg';
+import miku2 from './img/hi.jpg';
+import miku3 from './img/peace.jpg';
+import miku4 from './img/shorthair.jpg';
+import miku5 from './img/stare.jpg';
+import miku6 from './img/blush.jpg';
+
 const renderer = new THREE.WebGLRenderer();
 
 renderer.shadowMap.enabled = true;
@@ -53,7 +62,7 @@ scene.add(sphere);
 sphere.position.set(-10, 10, 0);
 sphere.castShadow = true;
 
-const ambient = new THREE.AmbientLight(0x333333);
+const ambient = new THREE.AmbientLight(0xffffff, 0.1);
 scene.add(ambient);
 
 // const directional = new THREE.DirectionalLight(0xffffff, 2);
@@ -76,6 +85,18 @@ spotLight.angle = 0.2;
 
 const sLightHelper = new THREE.SpotLightHelper(spotLight);
 scene.add(sLightHelper);  
+
+const textureLoader = new THREE.TextureLoader();
+// scene.background = textureLoader.load(serizawa);
+const cubeTextureLoader = new THREE.CubeTextureLoader();
+scene.background = cubeTextureLoader.load([
+  miku6,
+  miku5,
+  miku1,
+  miku2,
+  miku3,
+  miku4
+])
 
 const gui = new dat.GUI();
 
@@ -100,7 +121,7 @@ gui.add(options, 'speed', 0, 0.1);
 
 gui.add(options, 'angle', 0, 1);
 gui.add(options, 'penumbra', 0, 1);
-gui.add(options, 'intensity', 0, 50000);
+gui.add(options, 'intensity', 0, 100000);
 
 let step = 0;
 
